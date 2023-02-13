@@ -6,3 +6,4 @@
 
 from .screen import *
 from .button import *
+from .gen_sudo import *

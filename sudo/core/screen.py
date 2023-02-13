@@ -6,7 +6,8 @@
 
 import numpy as np
 import pygame
-import sudo.core.button as sudo_button
+import sudo.core.button as core_button
+import sudo.core.gen_sudo as core_gen_sudo
 
 
 class screen:
@@ -31,11 +32,13 @@ class screen:
         self.__surface.fill((255, 255, 255))
         # 获取字体对象
         self.__basicFont = pygame.font.SysFont("方正粗黑宋简体", 48)
+        self.__cell_row_col = [[(row, col) for col in range(9)] for row in range(9)]
         self.__cell_num_dict = {}  # store which number in a cell, key: cell pos, value: num
         self.__points = self.__build_points(self.__screen_size)
         self.__draw_square(self.__surface, self.__points)
         self.__cell_pos, self.__cell_button = self.__create_cell_button(self.__screen_size)
         self.__current_cell_pos = None
+        self.__current_cell_row_col = None
 
     @property
     def done(self):
@@ -56,6 +59,10 @@ class screen:
     @property
     def current_cell_pos(self):
         return self.__current_cell_pos
+
+    @property
+    def current_cell_row_col(self):
+        return self.__current_cell_row_col
 
     @done.setter
     def done(self, val):
@@ -95,7 +102,7 @@ class screen:
         p_d_width = (all_len - 2 * blank_height) / p_num_in_col - 1  # points distance width
 
         # build points
-        points = [[(0, 0) for j in range(p_num_in_row)] for i in range(p_num_in_col)]
+        points = [[(0, 0) for _ in range(p_num_in_row)] for _ in range(p_num_in_col)]
         points[0][0] = start_point  # point 1
         # loop for build points
         for row in range(p_num_in_col):
@@ -108,9 +115,9 @@ class screen:
                 mapped = map(sum, zipped)
                 points[row][col + 1] = tuple(mapped)
         # create cell num dict
-        for row in range(p_num_in_col):
-            for col in range(p_num_in_row):
-                string = "{x}, {y}".format(x=points[row][col][0], y=points[row][col][1])
+        for row in range(9):
+            for col in range(9):
+                string = "{row}, {col}".format(row=row, col=col)
                 self.__cell_num_dict[string] = None
         return points
 
@@ -155,7 +162,7 @@ class screen:
         p = self.__points
         p_num_in_row = len(p)
         p_num_in_col = len(p[0])
-        cell_pos = [[(0, 0) for j in range(p_num_in_row - 1)] for i in range(p_num_in_col - 1)]
+        cell_pos = [[(0, 0) for _ in range(p_num_in_row - 1)] for _ in range(p_num_in_col - 1)]
         cell_pos[0][0] = np.add(p[0][0], np.multiply(np.add(p[1][1], np.multiply(p[0][0], -1)), 0.5))
         for row in range(p_num_in_col - 1):
             if row < p_num_in_row - 2:
@@ -172,7 +179,7 @@ class screen:
                 # cell_image = pygame.draw.rect(screen, CELL_COL, (50, 50, 150, 50), 0)
                 cell_image = pygame.Surface(np.multiply(np.add(p[1][1], np.multiply(p[0][0], -1)), 0.93))
                 cell_image.fill(color='white')
-                cell_button[row][col] = sudo_button.Button(cell_pos[row][col][0], cell_pos[row][col][1], cell_image, 1)
+                cell_button[row][col] = core_button.Button(cell_pos[row][col][0], cell_pos[row][col][1], cell_image, 1)
         return cell_pos, cell_button
 
     def highlight_cell(self):
@@ -184,7 +191,7 @@ class screen:
         other cells in the larger cell: light gray
         """
         p = self.__points
-        green = np.multiply([0, 0.5, 0], 255)
+        green = np.multiply([0.55, 0.71, 0], 255)
         baby_blue = np.multiply([0.54, 0.81, 0.94], 255)
         light_gray = np.multiply([0.75, 0.75, 0.75], 255)
         cell_image = pygame.Surface(np.multiply(np.add(p[1][1], np.multiply(p[0][0], -1)), 0.93))
@@ -197,29 +204,30 @@ class screen:
                             # other cells in the same row and column: light blue
                             if row_ == row or col_ == col:
                                 cell_image.fill(color=baby_blue)
-                                self.__cell_button[row_][col_] = sudo_button.Button(self.__cell_pos[row_][col_][0],
+                                self.__cell_button[row_][col_] = core_button.Button(self.__cell_pos[row_][col_][0],
                                                                                     self.__cell_pos[row_][col_][1],
                                                                                     cell_image,
                                                                                     1)
                             # other cells in the larger cell: light gray
                             elif int(row_ / 3) == int(row / 3) and int(col_ / 3) == int(col / 3):
                                 cell_image.fill(color=light_gray)
-                                self.__cell_button[row_][col_] = sudo_button.Button(self.__cell_pos[row_][col_][0],
+                                self.__cell_button[row_][col_] = core_button.Button(self.__cell_pos[row_][col_][0],
                                                                                     self.__cell_pos[row_][col_][1],
                                                                                     cell_image,
                                                                                     1)
                             # other cells: white
                             else:
                                 cell_image.fill(color="white")
-                                self.__cell_button[row_][col_] = sudo_button.Button(self.__cell_pos[row_][col_][0],
+                                self.__cell_button[row_][col_] = core_button.Button(self.__cell_pos[row_][col_][0],
                                                                                     self.__cell_pos[row_][col_][1],
                                                                                     cell_image,
                                                                                     1)
                     # cell which is pressed: green
                     cell_image.fill(color=green)
-                    self.__cell_button[row][col] = sudo_button.Button(self.__cell_pos[row][col][0],
+                    self.__cell_button[row][col] = core_button.Button(self.__cell_pos[row][col][0],
                                                                       self.__cell_pos[row][col][1], cell_image, 1)
                     self.__current_cell_pos = self.__cell_pos[row][col]
+                    self.__current_cell_row_col = (row, col)
 
     def number_button(self, screen_size):
         """
@@ -231,26 +239,54 @@ class screen:
         NUM_COL = np.multiply([0, 0.5, 1], 255)
         num_image = []
         num_button = []
-        for i in range(10):
-            num_image.append(self.__basicFont.render(str(i), True, NUM_COL))
+        for i in range(9):
+            num_image.append(self.__basicFont.render(str(i+1), True, NUM_COL))
             pos = [0.2 * screen_width + 0.05 * screen_width * i, 0.85 * screen_height]
-            num_button.append(sudo_button.Button(pos[0], pos[1], num_image[i], 1))
+            num_button.append(core_button.Button(pos[0], pos[1], num_image[i], 1))
             num_button[i].draw(self.__surface)
             if num_button[i].collidepoint(self.__surface):
-                return i  # return the number which is pressed
+                return i+1  # return the number which is pressed
         return None
 
-    def press_to_add_num_to_cell(self, num, current_cell_pos):
-        if current_cell_pos:
-            string = "{x}, {y}".format(x=current_cell_pos[0], y=current_cell_pos[1])
+    def press_to_add_num_to_cell(self, num, current_cell_row_col):
+        row = current_cell_row_col[0]
+        col = current_cell_row_col[1]
+        if current_cell_row_col:
+            string = "{row}, {col}".format(row=self.__cell_row_col[row][col][0], col=self.__cell_row_col[row][col][1])
             self.__cell_num_dict[string] = num
 
-    def show_num_in_cell(self):
+    def __show_num_in_cell(self, num, row, col, color):
         num_font = self.__basicFont
+        cell_pos = self.__cell_pos[row][col]
+        num_surface = num_font.render(str(num), True, color)
+        rect = num_surface.get_rect(center=cell_pos)
+        self.__surface.blit(num_surface, rect.topleft)
+
+    def show_num_in_screen(self, num_in_screen, puzzle):
         blue = np.multiply([0, 0.5, 1], 255)
-        for (cell_pos, num) in self.__cell_num_dict.items():
+        black = np.multiply([0, 0, 0], 255)
+        red = np.multiply([1, 0, 0], 255)
+        # show puzzle
+        for row in range(9):
+            for col in range(9):
+                num = puzzle[row][col]
+                self.__show_num_in_cell(num, row, col, black)
+        # show user's choice
+        for (cell_row_col, num) in self.__cell_num_dict.items():
             if num:
-                cell_pos = tuple(map(float, cell_pos.split(', ')))
-                num_surface = num_font.render(str(num), True, blue)
-                rect = num_surface.get_rect(center=cell_pos)
-                self.__surface.blit(num_surface, rect.topleft)
+                cell_row_col = tuple(map(int, cell_row_col.split(', ')))
+                row = cell_row_col[0]
+                col = cell_row_col[1]
+                if puzzle[row][col] == " ":
+                    num_in_screen[row][col] = num  # add user's num choice to list
+                    num_is_valid = core_gen_sudo.GenSudo.check_num(num_in_screen, row, col, num)
+                    if num_is_valid:
+                        self.__show_num_in_cell(num, row, col, blue)
+                    else:
+                        self.__show_num_in_cell(num, row, col, red)
+        return num_in_screen
+
+    def highlight_number(self):
+        """
+        highlight all the same numbers when press the cell which has a number
+        """
