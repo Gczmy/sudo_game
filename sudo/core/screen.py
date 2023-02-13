@@ -6,6 +6,7 @@
 
 import numpy as np
 import pygame
+import copy
 import sudo.core.button as core_button
 import sudo.core.gen_sudo as core_gen_sudo
 
@@ -292,6 +293,8 @@ class screen:
         self.__surface.blit(num_surface, rect.topleft)
 
     def show_num_in_screen(self, num_in_screen, puzzle):
+        if self.__clear_flag:
+            num_in_screen = copy.deepcopy(puzzle)
         blue = np.multiply([0, 0.5, 1], 255)
         black = np.multiply([0, 0, 0], 255)
         red = np.multiply([1, 0, 0], 255)
@@ -321,7 +324,6 @@ class screen:
         key_font = pygame.font.SysFont("SimSun", 30)
         screen_width = screen_size[0]
         screen_height = screen_size[1]
-        # define the number's color
         blue = np.multiply([0, 0.5, 1], 255)
         diff_opt_name = ["入门", "简单", "中等", "困难", "地狱"]
         for i in range(len(diff_opt_name)):
@@ -336,6 +338,7 @@ class screen:
 
     def clear_all_users_num(self):
         if self.__clear_flag:
+            # 遍历所有格子，若用户数字与字典中数字相等（即确定为用户数字），则清除该格子字典值
             for row in range(9):
                 for col in range(9):
                     string = "{row}, {col}".format(row=self.__cell_row_col[row][col][0],

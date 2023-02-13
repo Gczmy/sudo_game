@@ -15,16 +15,15 @@ if __name__ == '__main__':
     num_in_screen = copy.deepcopy(gen_sudo.puzzle)
     last_num_row_col = None
     while not screen.done:
-        # screen.surface.fill((255, 255, 255))
         # 设置游戏的fps
         screen.clock.tick(30)
+        gen_sudo = screen.difficulty_option_button(screen.screen_size, gen_sudo)
         press_num = screen.number_button(screen.screen_size)
         cell_button = screen.cell_button
         screen.events_when_press_cell(num_in_screen)
         if press_num:
             screen.press_to_add_num_to_cell(press_num, screen.current_cell_row_col)
         num_in_screen = screen.show_num_in_screen(num_in_screen, gen_sudo.puzzle)
-        gen_sudo = screen.difficulty_option_button(screen.screen_size, gen_sudo)
         screen.clear_all_users_num()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
