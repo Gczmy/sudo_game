@@ -56,20 +56,19 @@ class GenSudo:
         #         puzzle_matrix = puzzle[:][col]
         return True
 
-
     @staticmethod
     def check_num(sudoku, row, col, val):
         # 检查当前位置是否合法
         for i in range(9):
-            if sudoku[row][i] == val:
+            if sudoku[row][i] == val and i != col:
                 return False
-            if sudoku[i][col] == val:
+            if sudoku[i][col] == val and i != row:
                 return False
         start_row = row // 3 * 3
         start_col = col // 3 * 3
         for i in range(3):
             for j in range(3):
-                if sudoku[start_row + i][start_col + j] == val:
+                if sudoku[start_row + i][start_col + j] == val and start_row + i != row and start_col + j != col:
                     return False
         return True
 

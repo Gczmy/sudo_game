@@ -39,6 +39,7 @@ class screen:
         self.__cell_pos, self.__cell_button = self.__create_cell_button(self.__screen_size)
         self.__current_cell_pos = None
         self.__current_cell_row_col = None
+        self.__users_num = [[None for _ in range(9)] for _ in range(9)]
 
     @property
     def done(self):
@@ -182,7 +183,7 @@ class screen:
                 cell_button[row][col] = core_button.Button(cell_pos[row][col][0], cell_pos[row][col][1], cell_image, 1)
         return cell_pos, cell_button
 
-    def highlight_cell(self):
+    def __highlight_cell(self, row, col):
         """
         When a cell is pressed, highlight other cells in the same row and column as well as other cells in the larger
         cell
@@ -195,37 +196,63 @@ class screen:
         baby_blue = np.multiply([0.54, 0.81, 0.94], 255)
         light_gray = np.multiply([0.75, 0.75, 0.75], 255)
         cell_image = pygame.Surface(np.multiply(np.add(p[1][1], np.multiply(p[0][0], -1)), 0.93))
+        for row_ in range(9):
+            for col_ in range(9):
+                # other cells in the same row and column: light blue
+                if row_ == row or col_ == col:
+                    cell_image.fill(color=baby_blue)
+                    self.__cell_button[row_][col_] = core_button.Button(self.__cell_pos[row_][col_][0],
+                                                                        self.__cell_pos[row_][col_][1],
+                                                                        cell_image,
+                                                                        1)
+                # other cells in the larger cell: light gray
+                elif int(row_ / 3) == int(row / 3) and int(col_ / 3) == int(col / 3):
+                    cell_image.fill(color=light_gray)
+                    self.__cell_button[row_][col_] = core_button.Button(self.__cell_pos[row_][col_][0],
+                                                                        self.__cell_pos[row_][col_][1],
+                                                                        cell_image,
+                                                                        1)
+                # other cells: white
+                else:
+                    cell_image.fill(color="white")
+                    self.__cell_button[row_][col_] = core_button.Button(self.__cell_pos[row_][col_][0],
+                                                                        self.__cell_pos[row_][col_][1],
+                                                                        cell_image,
+                                                                        1)
+
+        # cell which is pressed: green
+        cell_image.fill(color=green)
+        self.__cell_button[row][col] = core_button.Button(self.__cell_pos[row][col][0],
+                                                          self.__cell_pos[row][col][1], cell_image, 1)
+
+    def __highlight_number(self, row, col, num_in_screen):
+        """
+        highlight all the same numbers when press the cell which has a number
+        """
+        green = np.multiply([0.55, 0.71, 0], 255)
+        if num_in_screen[row][col] != " ":
+            for row_ in range(9):
+                for col_ in range(9):
+                    if num_in_screen[row_][col_] == num_in_screen[row][col]:
+                        num = num_in_screen[row][col]
+                        self.__show_num_in_cell(num, row_, col_, green)
+        self.__current_cell_pos = self.__cell_pos[row][col]
+        self.__current_cell_row_col = (row, col)
+
+    def events_when_press_cell(self, num_in_screen):
+        """
+        events:
+            highlight_cell
+            highlight_number
+        """
         for row in range(9):
             for col in range(9):
+                # draw cell buttons
                 self.__cell_button[row][col].draw(self.__surface)
+                # when press the cell
                 if self.__cell_button[row][col].collidepoint(self.__surface):
-                    for row_ in range(9):
-                        for col_ in range(9):
-                            # other cells in the same row and column: light blue
-                            if row_ == row or col_ == col:
-                                cell_image.fill(color=baby_blue)
-                                self.__cell_button[row_][col_] = core_button.Button(self.__cell_pos[row_][col_][0],
-                                                                                    self.__cell_pos[row_][col_][1],
-                                                                                    cell_image,
-                                                                                    1)
-                            # other cells in the larger cell: light gray
-                            elif int(row_ / 3) == int(row / 3) and int(col_ / 3) == int(col / 3):
-                                cell_image.fill(color=light_gray)
-                                self.__cell_button[row_][col_] = core_button.Button(self.__cell_pos[row_][col_][0],
-                                                                                    self.__cell_pos[row_][col_][1],
-                                                                                    cell_image,
-                                                                                    1)
-                            # other cells: white
-                            else:
-                                cell_image.fill(color="white")
-                                self.__cell_button[row_][col_] = core_button.Button(self.__cell_pos[row_][col_][0],
-                                                                                    self.__cell_pos[row_][col_][1],
-                                                                                    cell_image,
-                                                                                    1)
-                    # cell which is pressed: green
-                    cell_image.fill(color=green)
-                    self.__cell_button[row][col] = core_button.Button(self.__cell_pos[row][col][0],
-                                                                      self.__cell_pos[row][col][1], cell_image, 1)
+                    self.__highlight_cell(row, col)
+                    self.__highlight_number(row, col, num_in_screen)
                     self.__current_cell_pos = self.__cell_pos[row][col]
                     self.__current_cell_row_col = (row, col)
 
@@ -278,15 +305,11 @@ class screen:
                 row = cell_row_col[0]
                 col = cell_row_col[1]
                 if puzzle[row][col] == " ":
-                    num_in_screen[row][col] = num  # add user's num choice to list
                     num_is_valid = core_gen_sudo.GenSudo.check_num(num_in_screen, row, col, num)
+                    num_in_screen[row][col] = num  # add user's num choice to list
                     if num_is_valid:
                         self.__show_num_in_cell(num, row, col, blue)
                     else:
                         self.__show_num_in_cell(num, row, col, red)
         return num_in_screen
 
-    def highlight_number(self):
-        """
-        highlight all the same numbers when press the cell which has a number
-        """
