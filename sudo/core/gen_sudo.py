@@ -38,25 +38,6 @@ class GenSudo:
         return puzzle
 
     @staticmethod
-    def __check_puzzle(sudoku):
-        sudoku_col = []
-        for row in range(9):
-            for col in range(9):
-                sudoku_col.append(sudoku[row][col])
-
-            sudoku_row = sudoku[row]
-            set_row = set(sudoku_row)
-            if len(set_row) != len(sudoku_row):
-                return False
-            set_col = set(sudoku_col)
-            if len(set_col) != len(sudoku_col):
-                return False
-        # for matrix in range(9):
-        #     for i in range(9):
-        #         puzzle_matrix = puzzle[:][col]
-        return True
-
-    @staticmethod
     def check_num(sudoku, row, col, val):
         # 检查当前位置是否合法
         for i in range(9):

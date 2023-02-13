@@ -24,6 +24,8 @@ if __name__ == '__main__':
         if press_num:
             screen.press_to_add_num_to_cell(press_num, screen.current_cell_row_col)
         num_in_screen = screen.show_num_in_screen(num_in_screen, gen_sudo.puzzle)
+        gen_sudo = screen.difficulty_option_button(screen.screen_size, gen_sudo)
+        screen.clear_all_users_num()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 screen.done = True  # 若检测到关闭窗口，则将done置为True
