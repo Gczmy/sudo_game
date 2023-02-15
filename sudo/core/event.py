@@ -46,25 +46,27 @@ class Event:
             highlight_cell
             highlight_number
         """
+        current_cell_row_col = False
         for row in range(9):
             for col in range(9):
                 # when press the cell
                 if all_cell_button[row][col].collidepoint(self.__surface):
                     current_cell_row_col = (row, col)
-                    return current_cell_row_col
-        return False
+        return current_cell_row_col
 
     def num_is_pressed(self, all_num_button):
+        num_pressed = None
         for i in range(9):
             if all_num_button[i].collidepoint(self.__surface):
-                return i + 1  # return the number which is pressed
-        return None
+                num_pressed = i + 1
+        return num_pressed  # return the number which is pressed
 
     def diff_option_is_pressed(self, all_difficulty_option_button):
-        for diff_option in range(len(all_difficulty_option_button)):
-            if all_difficulty_option_button[diff_option].collidepoint(self.__surface):
-                return diff_option + 1  # return the difficulty option
-        return False
+        diff_option = False
+        for i in range(len(all_difficulty_option_button)):
+            if all_difficulty_option_button[i].collidepoint(self.__surface):
+                diff_option = i + 1
+        return diff_option  # return the difficulty option
 
     def add_num_to_cell(self, num, current_cell_row_col, num_in_screen, puzzle):
         # 只有当格子已被选中时，点击number button才生效

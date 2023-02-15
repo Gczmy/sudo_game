@@ -44,14 +44,18 @@ if __name__ == '__main__':
         current_cell_row_col = event.cell_is_pressed(all_cell_button)
         if current_cell_row_col:
             all_cell_button = screen.highlight_cell(points_pos, all_cell_pos, all_cell_button, current_cell_row_col)
-        press_num = event.num_is_pressed(all_num_button)
+
         # add number to the cell when cell has been chosen and number button is pressed
+        press_num = event.num_is_pressed(all_num_button)
         if press_num:
             num_in_screen = event.add_num_to_cell(press_num, screen.current_cell_row_col, num_in_screen, gen_sudo.puzzle)
+
         # re-generate sudo puzzle and clear all user's number when difficulty option button is pressed
         blank_num = event.diff_option_is_pressed(all_difficulty_option_button)
         if blank_num:
             gen_sudo = event.regen_sudo(blank_num)
+
+        # if clear_flag has been set, clear all the user's number in the screen and reset relate lists
         if event.clear_flag:
             screen.clear_all_users_num(event.all_users_num)
             event.all_users_num = [[None for _ in range(9)] for _ in range(9)]
@@ -59,12 +63,14 @@ if __name__ == '__main__':
             event.create_cell_num_dict(gen_sudo.puzzle)
             event.clear_flag = False
 
-        # at last, show all the necessary numbers in the screen
+        # show all the necessary numbers in the screen
         num_in_screen = screen.show_num_in_screen(all_cell_pos, num_in_screen, gen_sudo.puzzle, event.all_users_num,
                                                   event.all_num_is_valid)
 
+        # highlight number when cell pressed should be done in the last
         if current_cell_row_col:
             screen.highlight_number(all_cell_pos, num_in_screen, current_cell_row_col)
+
         for pygame_event in pygame.event.get():
             if pygame_event.type == pygame.QUIT:
                 screen.done = True  # 若检测到关闭窗口，则将done置为True
