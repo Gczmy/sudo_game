@@ -116,13 +116,13 @@ class Component:
                 zipped = zip(all_cell_pos[row][col], (0, p_d_width))
                 mapped = map(sum, zipped)
                 all_cell_pos[row][col + 1] = tuple(mapped)
-        all_cell_button = [[None for j in range(p_num_in_row - 1)] for i in range(p_num_in_col - 1)]
+        all_cell_button = [[None for _ in range(p_num_in_row - 1)] for _ in range(p_num_in_col - 1)]
         for row in range(p_num_in_col - 1):
             for col in range(p_num_in_row - 1):
-                cell_image = pygame.Surface(np.multiply(np.add(p[1][1], np.multiply(p[0][0], -1)), 0.93))
-                cell_image.fill(color='white')
-                all_cell_button[row][col] = core_button.Button(all_cell_pos[row][col][0], all_cell_pos[row][col][1],
-                                                               cell_image, 1)
+                cell_center_x = 0.93 * (p[1][1][0] - p[0][0][0])
+                cell_center_y = 0.93 * (p[1][1][1] - p[0][0][1])
+                cell_center = (cell_center_x, cell_center_y)
+                all_cell_button[row][col] = core_button.CellButton(cell_center, all_cell_pos[row][col], 'white')
         return all_cell_pos, all_cell_button
 
     def __create_number_button(self):
@@ -130,19 +130,14 @@ class Component:
         build the number button for filling the cell
         """
         screen_size = self.__screen_size
-        num_font = pygame.font.SysFont("方正粗黑宋简体", 100)
         screen_width = screen_size[0]
         screen_height = screen_size[1]
-        # define the number's color
-        blue = np.multiply([0, 0.5, 1], 255)
-        num_image = []
         all_num_pos = []
         all_num_button = []
         for i in range(9):
-            num_image.append(num_font.render(str(i + 1), True, blue))
-            pos = [0.12 * screen_width + 0.07 * screen_width * i, 0.87 * screen_height]
+            pos = (0.12 * screen_width + 0.07 * screen_width * i, 0.87 * screen_height)
             all_num_pos.append(pos)
-            all_num_button.append(core_button.Button(pos[0], pos[1], num_image[i], 1))
+            all_num_button.append(core_button.NumberButton(i + 1, pos, 'blue'))
         return all_num_pos, all_num_button
 
     def cal_number_of_remaining_num(self, cell_num_dict):
@@ -158,14 +153,11 @@ class Component:
 
     def __create_difficulty_option_button(self):
         screen_size = self.__screen_size
-        key_font = pygame.font.SysFont("SimSun", 30)
         screen_width = screen_size[0]
         screen_height = screen_size[1]
-        blue = np.multiply([0, 0.5, 1], 255)
         diff_opt_name = ["入门", "简单", "中等", "困难", "地狱"]
         all_diff_opt_button = []
         for i in range(len(diff_opt_name)):
-            diff_opt_image = key_font.render(diff_opt_name[i], True, blue)
             diff_opt_pos = [0.8 * screen_width, 0.27 * screen_height + 0.07 * screen_height * i]
-            all_diff_opt_button.append(core_button.Button(diff_opt_pos[0], diff_opt_pos[1], diff_opt_image, 1))
+            all_diff_opt_button.append(core_button.DifficultyOptionButton(diff_opt_name[i], diff_opt_pos, 'blue'))
         return all_diff_opt_button

@@ -136,40 +136,25 @@ class Screen:
         other cells in the larger cell: light gray
         """
         p = points_pos
-        green = np.multiply([0.55, 0.71, 0], 255)
-        baby_blue = np.multiply([0.54, 0.81, 0.94], 255)
-        light_gray = np.multiply([0.75, 0.75, 0.75], 255)
-        cell_image = pygame.Surface(np.multiply(np.add(p[1][1], np.multiply(p[0][0], -1)), 0.93))
+        cell_center_x = 0.93 * (p[1][1][0] - p[0][0][0])
+        cell_center_y = 0.93 * (p[1][1][1] - p[0][0][1])
+        cell_center = (cell_center_x, cell_center_y)
         row = current_cell_row_col[0]
         col = current_cell_row_col[1]
         for row_ in range(9):
             for col_ in range(9):
                 # other cells in the same row and column: light blue
                 if row_ == row or col_ == col:
-                    cell_image.fill(color=baby_blue)
-                    all_cell_button[row_][col_] = core_button.Button(all_cell_pos[row_][col_][0],
-                                                                     all_cell_pos[row_][col_][1],
-                                                                     cell_image,
-                                                                     1)
+                    all_cell_button[row_][col_] = core_button.CellButton(cell_center, all_cell_pos[row_][col_], 'baby blue')
                 # other cells in the larger cell: light gray
                 elif int(row_ / 3) == int(row / 3) and int(col_ / 3) == int(col / 3):
-                    cell_image.fill(color=light_gray)
-                    all_cell_button[row_][col_] = core_button.Button(all_cell_pos[row_][col_][0],
-                                                                     all_cell_pos[row_][col_][1],
-                                                                     cell_image,
-                                                                     1)
+                    all_cell_button[row_][col_] = core_button.CellButton(cell_center, all_cell_pos[row_][col_], 'light gray')
                 # other cells: white
                 else:
-                    cell_image.fill(color="white")
-                    all_cell_button[row_][col_] = core_button.Button(all_cell_pos[row_][col_][0],
-                                                                     all_cell_pos[row_][col_][1],
-                                                                     cell_image,
-                                                                     1)
+                    all_cell_button[row_][col_] = core_button.CellButton(cell_center, all_cell_pos[row_][col_], 'white')
 
         # cell which is pressed: green
-        cell_image.fill(color=green)
-        all_cell_button[row][col] = core_button.Button(all_cell_pos[row][col][0],
-                                                       all_cell_pos[row][col][1], cell_image, 1)
+        all_cell_button[row][col] = core_button.CellButton(cell_center, all_cell_pos[row][col], 'apple green')
         return all_cell_button
 
     def highlight_number(self, all_cell_pos, num_in_screen, current_cell_row_col):
