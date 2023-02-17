@@ -36,13 +36,19 @@ class Screen:
         self.__basicFont = pygame.font.SysFont("方正粗黑宋简体", 100)
         self.__cell_row_col = [[(row, col) for col in range(9)] for row in range(9)]
         self.__cell_num_dict = {}  # store which number in a cell, key: (cell row, cell col), value: num
-        # self.__points = self.__build_points(self.__screen_size)
-        # self.__draw_square(self.__surface, self.__points)
-        # self.__cell_pos, self.__cell_button = self.__create_cell_button(self.__screen_size)
         self.__current_cell_pos = None
         self.__current_cell_row_col = None
         self.__users_num = [[None for _ in range(9)] for _ in range(9)]
         self.__clear_flag = False  # flag for clear users num
+        self.__num_mat = [[None for _ in range(9)] for _ in range(9)]  # store all the number's value on the board
+        self.__num_color = [[None for _ in range(9)] for _ in range(9)]  # store all the number's color on the board
+        self.__color_map = {'black': [0, 0, 0],
+                            'apple green': [0.55 * 255, 0.71 * 255, 0 * 255],
+                            'white': [255, 255, 255],
+                            'blue': [0, 0.5 * 255, 255],
+                            'red': [255, 0, 0],
+                            'light gray': [0.75 * 255, 0.75 * 255, 0.75 * 255],
+                            'baby blue': [0.54 * 255, 0.81 * 255, 0.94 * 255]}
 
     @property
     def done(self):
@@ -55,10 +61,6 @@ class Screen:
     @property
     def screen_size(self):
         return self.__screen_size
-
-    # @property
-    # def cell_button(self):
-    #     return self.__cell_button
 
     @property
     def current_cell_pos(self):
@@ -145,58 +147,84 @@ class Screen:
             for col_ in range(9):
                 # other cells in the same row and column: light blue
                 if row_ == row or col_ == col:
-                    all_cell_button[row_][col_] = core_button.CellButton(cell_center, all_cell_pos[row_][col_], 'baby blue')
+                    color = self.__color_map['baby blue']
+                    all_cell_button[row_][col_] = core_button.CellButton(cell_center, all_cell_pos[row_][col_], color)
                 # other cells in the larger cell: light gray
                 elif int(row_ / 3) == int(row / 3) and int(col_ / 3) == int(col / 3):
-                    all_cell_button[row_][col_] = core_button.CellButton(cell_center, all_cell_pos[row_][col_], 'light gray')
+                    color = self.__color_map['light gray']
+                    all_cell_button[row_][col_] = core_button.CellButton(cell_center, all_cell_pos[row_][col_], color)
                 # other cells: white
                 else:
-                    all_cell_button[row_][col_] = core_button.CellButton(cell_center, all_cell_pos[row_][col_], 'white')
+                    color = self.__color_map['white']
+                    all_cell_button[row_][col_] = core_button.CellButton(cell_center, all_cell_pos[row_][col_], color)
 
         # cell which is pressed: green
-        all_cell_button[row][col] = core_button.CellButton(cell_center, all_cell_pos[row][col], 'apple green')
+        color = self.__color_map['apple green']
+        all_cell_button[row][col] = core_button.CellButton(cell_center, all_cell_pos[row][col], color)
         return all_cell_button
 
-    def highlight_number(self, all_cell_pos, num_in_screen, current_cell_row_col):
+    def highlight_number(self, all_cell_pos, current_cell_row_col):
         """
         highlight all the same numbers when press the cell which has a number
         """
         row = current_cell_row_col[0]
         col = current_cell_row_col[1]
-        green = np.multiply([0.55, 0.71, 0], 255)
-        if num_in_screen[row][col] != " ":
-            for row_ in range(9):
-                for col_ in range(9):
-                    if num_in_screen[row_][col_] == num_in_screen[row][col]:
-                        num = num_in_screen[row][col]
-                        self.__show_num_in_cell(all_cell_pos, num, row_, col_, green)
+        num = self.__num_mat[row][col]
+        for row_ in range(9):
+            for col_ in range(9):
+                if self.__num_mat[row][col] != " ":
+                    if self.__num_mat[row_][col_] == num:
+                        self.__num_color[row_][col_] = 'apple green'
+                    else:
+                        if self.__num_color[row_][col_] == 'blue' or self.__num_color[row_][col_] == 'red':
+                            pass
+                        else:
+                            self.__num_color[row_][col_] = 'black'
+                else:
+                    if self.__num_color[row_][col_] == 'blue' or self.__num_color[row_][col_] == 'red':
+                        pass
+                    else:
+                        self.__num_color[row_][col_] = 'black'
+
+        self.__num_color[row][col] = 'white'
         self.__current_cell_pos = all_cell_pos[row][col]
         self.__current_cell_row_col = (row, col)
 
-    def __show_num_in_cell(self, all_cell_pos, num, row, col, color):
+    def __show_num_in_cell(self, pos, num, color):
         num_font = pygame.font.SysFont("方正粗黑宋简体", 100)
-        cell_pos = all_cell_pos[row][col]
         num_surface = num_font.render(str(num), True, color)
-        rect = num_surface.get_rect(center=cell_pos)
+        rect = num_surface.get_rect(center=pos)
         self.__surface.blit(num_surface, rect.topleft)
 
-    def show_num_in_screen(self, all_cell_pos, num_in_screen, puzzle, all_users_num, all_num_is_valid):
-        blue = np.multiply([0, 0.5, 1], 255)
-        black = np.multiply([0, 0, 0], 255)
-        red = np.multiply([1, 0, 0], 255)
+    def create_num_mat(self, puzzle):
+        self.__num_mat = [[None for _ in range(9)] for _ in range(9)]  # store all the number's value on the board
+        self.__num_color = [[None for _ in range(9)] for _ in range(9)]  # store all the number's color on the board
         for row in range(9):
             for col in range(9):
-                # show puzzle in the screen
-                num = puzzle[row][col]
-                self.__show_num_in_cell(all_cell_pos, num, row, col, black)
-                # show user's choice in the screen
+                self.__num_mat[row][col] = puzzle[row][col]
+                self.__num_color[row][col] = 'black'
+
+    def update_num_mat(self, all_users_num, all_num_is_valid):
+        """
+        create the number matrix in the board
+        """
+        for row in range(9):
+            for col in range(9):
                 if all_users_num[row][col] is not None:
-                    num = all_users_num[row][col]
+                    self.__num_mat[row][col] = all_users_num[row][col]
                     if all_num_is_valid[row][col]:
-                        self.__show_num_in_cell(all_cell_pos, num, row, col, blue)
+                        self.__num_color[row][col] = 'blue'
                     else:
-                        self.__show_num_in_cell(all_cell_pos, num, row, col, red)
-        return num_in_screen
+                        self.__num_color[row][col] = 'red'
+
+    def show_num_in_screen(self, all_cell_pos):
+        for row in range(9):
+            for col in range(9):
+                num = self.__num_mat[row][col]
+                color = self.__num_color[row][col]
+                color = self.__color_map[color]
+                pos = all_cell_pos[row][col]
+                self.__show_num_in_cell(pos, num, color)
 
     def show_remaining_num(self, all_num_pos, all_remain_num):
         screen_size = self.__screen_size
@@ -208,8 +236,8 @@ class Screen:
         for i in range(9):
             pos = all_num_pos[i]
             remain_num_image = remain_num_font.render(str(all_remain_num[i]), True, yellow, white)
-            remain_numm_pos = [pos[0] + 0.03 * screen_width, pos[1] + 0.015 * screen_height]
-            rect = remain_num_image.get_rect(center=remain_numm_pos)
+            remain_num_pos = [pos[0] + 0.03 * screen_width, pos[1] + 0.015 * screen_height]
+            rect = remain_num_image.get_rect(center=remain_num_pos)
             self.__surface.blit(remain_num_image, rect.topleft)
 
     def clear_all_users_num(self, all_users_num):

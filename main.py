@@ -8,7 +8,6 @@ import pygame
 import sudo
 import copy
 
-
 if __name__ == '__main__':
     screen = sudo.core.Screen()
     gen_sudo = sudo.core.GenSudo(20)
@@ -23,12 +22,13 @@ if __name__ == '__main__':
     all_num_button = component.all_num_button
     all_difficulty_option_button = component.all_difficulty_option_button
     event.create_cell_num_dict(gen_sudo.puzzle)
+    screen.create_num_mat(gen_sudo.puzzle)
     while not screen.done:
         # 设置游戏的fps
         screen.clock.tick(30)
 
         screen.cell_num_dict = event.cell_num_dict
-
+        screen.update_num_mat(event.all_users_num, event.all_num_is_valid)
         # draw components in the screen
         # -----------------------------------------
         screen.draw_square(points_pos)
@@ -40,15 +40,18 @@ if __name__ == '__main__':
 
         # events
         # -----------------------------------------
-        # highlight cells and numbers when cell is pressed
         current_cell_row_col = event.cell_is_pressed(all_cell_button)
         if current_cell_row_col:
+            # highlight cells and numbers when cell is pressed
             all_cell_button = screen.highlight_cell(points_pos, all_cell_pos, all_cell_button, current_cell_row_col)
+            # highlight the number when cell is pressed
+            screen.highlight_number(all_cell_pos, current_cell_row_col)
 
         # add number to the cell when cell has been chosen and number button is pressed
         press_num = event.num_is_pressed(all_num_button)
         if press_num:
-            num_in_screen = event.add_num_to_cell(press_num, screen.current_cell_row_col, num_in_screen, gen_sudo.puzzle)
+            num_in_screen = event.add_num_to_cell(press_num, screen.current_cell_row_col, num_in_screen,
+                                                  gen_sudo.puzzle)
 
         # re-generate sudo puzzle and clear all user's number when difficulty option button is pressed
         blank_num = event.diff_option_is_pressed(all_difficulty_option_button)
@@ -57,6 +60,7 @@ if __name__ == '__main__':
 
         # if clear_flag has been set, clear all the user's number in the screen and reset relate lists
         if event.clear_flag:
+            screen.create_num_mat(gen_sudo.puzzle)
             screen.clear_all_users_num(event.all_users_num)
             event.all_users_num = [[None for _ in range(9)] for _ in range(9)]
             num_in_screen = copy.deepcopy(gen_sudo.puzzle)
@@ -64,12 +68,7 @@ if __name__ == '__main__':
             event.clear_flag = False
 
         # show all the necessary numbers in the screen
-        num_in_screen = screen.show_num_in_screen(all_cell_pos, num_in_screen, gen_sudo.puzzle, event.all_users_num,
-                                                  event.all_num_is_valid)
-
-        # highlight number when cell pressed should be done in the last
-        if current_cell_row_col:
-            screen.highlight_number(all_cell_pos, num_in_screen, current_cell_row_col)
+        screen.show_num_in_screen(all_cell_pos)
 
         for pygame_event in pygame.event.get():
             if pygame_event.type == pygame.QUIT:

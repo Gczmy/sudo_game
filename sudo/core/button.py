@@ -6,14 +6,6 @@
 
 import pygame
 
-color_map = {'black': [0, 0, 0],
-             'apple green': [0.55 * 255, 0.71 * 255, 0 * 255],
-             'white': [255, 255, 255],
-             'blue': [0, 0.5 * 255, 255],
-             'red': [255, 0, 0],
-             'light gray': [0.75 * 255, 0.75 * 255, 0.75 * 255],
-             'baby blue': [0.54 * 255, 0.81 * 255, 0.94 * 255]}
-
 
 class Button:
     def __init__(self, image_center, image, scale):
@@ -56,32 +48,20 @@ class Button:
 
 class CellButton(Button):
     def __init__(self, cell_center, button_pos, color):
-        color = color_map[color]
         cell_image = pygame.Surface(cell_center)
         cell_image.fill(color=color)
         super().__init__(button_pos, cell_image, 1)
 
-    def draw(self, surface):
-        super().draw(surface)
-
 
 class NumberButton(Button):
     def __init__(self, num, pos, color):
-        color = color_map[color]
         num_font = pygame.font.SysFont("方正粗黑宋简体", 100)
         num_image = num_font.render(str(num), True, color)
         super().__init__(pos, num_image, 1)
 
-    def draw(self, surface):
-        super().draw(surface)
-
 
 class DifficultyOptionButton(Button):
     def __init__(self, diff_opt, pos, color):
-        color = color_map[color]
         diff_opt_font = pygame.font.SysFont("SimSun", 30)
         diff_opt_image = diff_opt_font.render(diff_opt, True, color)
         super().__init__(pos, diff_opt_image, 1)
-
-    def draw(self, surface):
-        super().draw(surface)
